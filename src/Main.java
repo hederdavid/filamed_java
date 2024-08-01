@@ -71,11 +71,31 @@ public class Main {
         System.out.print("👤  Digite o nome completo do paciente: ");
         String nomeCompleto = scanner.nextLine().toUpperCase();
 
-        System.out.print("🆔  Digite o CPF do paciente: ");
-        String cpf = scanner.nextLine();
+        String cpf;
+        while (true) {
+            System.out.print("🆔  Digite o CPF do paciente: ");
+            cpf = scanner.nextLine();
+            if (cpf.matches("\\d{11}")) {
+                if (!cpfJaExiste(cpf)) {
+                    break;
+                } else {
+                    System.out.println("❌ CPF já cadastrado! Digite um CPF diferente.");
+                }
+            } else {
+                System.out.println("❌ CPF inválido! Digite um CPF com 11 dígitos.");
+            }
+        }
 
-        System.out.print("⚧️  Digite o sexo do paciente (Masculino/Feminino/Outros): ");
-        char sexo = scanner.nextLine().toUpperCase().charAt(0);
+        char sexo;
+        while (true) {
+            System.out.print("⚧️  Digite o sexo do paciente (Masculino/Feminino/Outros): ");
+            sexo = scanner.nextLine().toUpperCase().charAt(0);
+            if (sexo == 'M' || sexo == 'F' || sexo == 'O') {
+                break;
+            } else {
+                System.out.println("❌ Sexo inválido! Digite M, F ou O.");
+            }
+        }
 
         LocalDate dataNascimento = null;
 
@@ -99,7 +119,11 @@ public class Main {
                 System.out.print("🚨  Digite a prioridade do paciente (1 - NÃO URGENTE, 2 - POUCO URGENTE, 3 - URGENTE, " +
                         "4 - MUITO URGENTE, 5 - EMERGENTE): ");
                 prioridade = scanner.nextInt();
-                break;
+                if (prioridade >= 1 && prioridade <= 5) {
+                    break;
+                } else {
+                    System.out.println("❌ Prioridade inválida! Digite um número entre 1 e 5.");
+                }
             } catch (InputMismatchException e) {
                 System.out.println("❌ Prioridade inválida! Tente novamente.");
                 scanner.nextLine();
@@ -157,5 +181,9 @@ public class Main {
 
             default -> System.out.println("Algo deu errado ao atualizar a quantidade de pacientes");
         }
+    }
+
+    private static boolean cpfJaExiste(String cpf) {
+        return fila.stream().anyMatch(paciente -> paciente.getCpf().equals(cpf));
     }
 }
