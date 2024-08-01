@@ -5,7 +5,7 @@ import java.time.format.DateTimeParseException;
 import java.util.*;
 
 public class Main {
-    public static Queue<Paciente> fila = new ArrayDeque<>();
+    public static PriorityQueue<Paciente> fila = new PriorityQueue<>(new PacienteComparator());
     public static Map<String, Integer> qtdPacientesEnfileiradosPorPrioridade;
     public static final Scanner scanner = new Scanner(System.in);
 
@@ -17,7 +17,21 @@ public class Main {
         qtdPacientesEnfileiradosPorPrioridade.put("POUCO URGENTE", 0);
         qtdPacientesEnfileiradosPorPrioridade.put("NÃO URGENTE", 0);
     }
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
+        fila.add(new Paciente("João Silva", "12345678900", 'M', LocalDate.of(1980, 5, 15),
+                "Dor de cabeça intensa", 4, LocalDateTime.now(), "senha123"));
+        Thread.sleep(1000);
+
+        fila.add(new Paciente("Maria Santos", "98765432100", 'F', LocalDate.of(1990, 3, 20),
+                "Febre alta", 5, LocalDateTime.now(), "senha456"));
+        Thread.sleep(1000);
+
+        fila.add(new Paciente("Carlos Lima", "45612378900", 'M', LocalDate.of(1975, 7, 10),
+                "Tontura", 3, LocalDateTime.now(), "senha789"));
+        Thread.sleep(1000);
+
+        fila.add(new Paciente("Ana Costa", "78945612300", 'F', LocalDate.of(2000, 1, 5),
+                "Dificuldade para respirar", 5, LocalDateTime.now(), "senha012"));
         int opcaoEscolhida = -1;
         do {
             System.out.println("\n╔═══════════════════════════════════════════════════════════════╗");
@@ -29,7 +43,7 @@ public class Main {
             System.out.println("║                       Selecione uma opção:                    ║");
             System.out.println("║                                                               ║");
             System.out.println("║  1.  Adicionar paciente                                       ║");
-            System.out.println("║  2.  Chamar próximo paciente                                  ║");
+            System.out.println("║  2.  Atender próximo paciente                                 ║");
             System.out.println("║  3.  Verificar iminência de atendimento                       ║");
             System.out.println("║  4.  Consultar próximo paciente de uma fila                   ║");
             System.out.println("║  5.  Consultar estatísticas                                   ║");
@@ -51,7 +65,8 @@ public class Main {
             scanner.nextLine();
 
             switch (opcaoEscolhida) {
-                case 1-> adicionarPacienteNaFila();
+                case 1 -> adicionarPacienteNaFila();
+                case 2 -> atenderProximoPaciente();
             }
 
         } while (opcaoEscolhida != 0);
@@ -61,6 +76,24 @@ public class Main {
         Paciente paciente = cadastrarPaciente();
         fila.add(paciente);
         System.out.println(fila);
+    }
+
+    private static void atenderProximoPaciente() {
+        System.out.println("\n╔════════════════════════════════════════════╗");
+        System.out.println("║           Atender Próximo Paciente         ║");
+        System.out.println("╚════════════════════════════════════════════╝");
+        int prioridade = 0;
+        while (true) {
+            System.out.print("⚠️ Digite '0' para selecionar automaticamente ou \nDigite a classificação de risco (5 - Emergência, 4 - Muito Urgente, 3 - Urgente, 2 - Pouco Urgente, 1 - Não Urgente): ");
+            prioridade = scanner.nextInt();
+            if (prioridade >= 0 && prioridade <= 5) {
+                break;
+            } else {
+                System.out.println("❌ Prioridade inválida! Digite um número entre 1 e 5.");
+            }
+        }
+
+        atenderPacientePelaPrioridade(prioridade);
     }
 
     private static Paciente cadastrarPaciente() {
@@ -185,5 +218,63 @@ public class Main {
 
     private static boolean cpfJaExiste(String cpf) {
         return fila.stream().anyMatch(paciente -> paciente.getCpf().equals(cpf));
+    }
+
+    private static void atenderPacientePelaPrioridade(int prioridade) {
+        switch(prioridade) {
+            case 5 -> {
+                for (Paciente paciente : fila) {
+                    if (paciente.getPrioridade() == 5) {
+                        System.out.println(fila.remove(paciente));
+                        break;
+                    }
+                }
+            }
+            case 4 -> {
+                for (Paciente paciente : fila) {
+                    if (paciente.getPrioridade() == 4) {
+                        System.out.println(fila.remove(paciente));
+                        break;
+                    }
+                }
+
+            }
+
+            case 3 -> {
+                for (Paciente paciente : fila) {
+                    if (paciente.getPrioridade() == 3) {
+                        System.out.println(fila.remove(paciente));
+                        break;
+                    }
+                }
+            }
+
+            case 2 -> {
+                for (Paciente paciente : fila) {
+                    if (paciente.getPrioridade() == 2) {
+                        System.out.println(fila.remove(paciente));
+                        break;
+                    }
+                }
+            }
+            case 1 -> {
+                for (Paciente paciente : fila) {
+                    if (paciente.getPrioridade() == 1) {
+                        System.out.println(fila.remove(paciente));
+                        break;
+                    }
+                }
+            }
+            case 0 -> {
+                if (!fila.isEmpty()) {
+                    System.out.println(fila.poll());
+                } else {
+                    System.out.println("Fila Vazia!");
+                }
+
+            }
+
+            default -> System.out.println("Prioridade inválida!");
+        }
     }
 }
