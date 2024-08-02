@@ -1,3 +1,7 @@
+package domain;
+
+import java.io.*;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -5,33 +9,41 @@ import java.time.format.DateTimeParseException;
 import java.util.*;
 
 public class Main {
-    public static PriorityQueue<Paciente> fila = new PriorityQueue<>(new PacienteComparator());
-    public static Map<String, Integer> qtdPacientesEnfileiradosPorPrioridade;
-    public static final Scanner scanner = new Scanner(System.in);
+    private static PriorityQueue<Paciente> fila = new PriorityQueue<>(new PacienteComparator());
+    private static Map<String, Integer> qtdPacientesEnfileiradosPorPrioridade;
+    private static Scanner scanner = new Scanner(System.in);
 
     static {
+        try {
+            fila = carregarPacientesDoBdo();
+        } catch (IOException e) {
+            System.out.println("Fila vazia no momento!");
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+            System.out.println("Ocorreu um erro ao tentar carregar os pacientes do banco de dados.");
+        }
+
         qtdPacientesEnfileiradosPorPrioridade = new HashMap<>();
-        qtdPacientesEnfileiradosPorPrioridade.put("EMERGENTE", 0);
-        qtdPacientesEnfileiradosPorPrioridade.put("MUITO URGENTE", 0);
-        qtdPacientesEnfileiradosPorPrioridade.put("URGENTE", 0);
-        qtdPacientesEnfileiradosPorPrioridade.put("POUCO URGENTE", 0);
-        qtdPacientesEnfileiradosPorPrioridade.put("NÃO URGENTE", 0);
+        qtdPacientesEnfileiradosPorPrioridade.put("EMERGENTE", verificarQuantidadeDePacientesPorPrioridade(5));
+        qtdPacientesEnfileiradosPorPrioridade.put("MUITO URGENTE", verificarQuantidadeDePacientesPorPrioridade(4));
+        qtdPacientesEnfileiradosPorPrioridade.put("URGENTE", verificarQuantidadeDePacientesPorPrioridade(3));
+        qtdPacientesEnfileiradosPorPrioridade.put("POUCO URGENTE", verificarQuantidadeDePacientesPorPrioridade(2));
+        qtdPacientesEnfileiradosPorPrioridade.put("NÃO URGENTE", verificarQuantidadeDePacientesPorPrioridade(1));
+
     }
-    public static void main(String[] args) throws InterruptedException {
-        fila.add(new Paciente("João Silva", "12345678900", 'M', LocalDate.of(1980, 5, 15),
-                "Dor de cabeça intensa", 4, LocalDateTime.now(), "senha123"));
-        Thread.sleep(1000);
 
-        fila.add(new Paciente("Maria Santos", "98765432100", 'F', LocalDate.of(1990, 3, 20),
-                "Febre alta", 5, LocalDateTime.now(), "senha456"));
-        Thread.sleep(1000);
+    private static int verificarQuantidadeDePacientesPorPrioridade(int prioridade) {
+        int qtd = 0;
+        for (Paciente paciente : fila) {
+            if (paciente.getPrioridade() == prioridade) {
+                qtd++;
+            }
+        }
+        return qtd;
+    }
 
-        fila.add(new Paciente("Carlos Lima", "45612378900", 'M', LocalDate.of(1975, 7, 10),
-                "Tontura", 3, LocalDateTime.now(), "senha789"));
-        Thread.sleep(1000);
+    public static void main(String[] args) {
 
-        fila.add(new Paciente("Ana Costa", "78945612300", 'F', LocalDate.of(2000, 1, 5),
-                "Dificuldade para respirar", 5, LocalDateTime.now(), "senha012"));
         int opcaoEscolhida = -1;
         do {
             System.out.println("\n╔═══════════════════════════════════════════════════════════════╗");
@@ -67,6 +79,15 @@ public class Main {
             switch (opcaoEscolhida) {
                 case 1 -> adicionarPacienteNaFila();
                 case 2 -> atenderProximoPaciente();
+                case 3 -> verificarIminencia();
+                case 4 -> consultarDadosProximoPaciente();
+                case 0 -> {
+                    try {
+                        atualizarBdo();
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
             }
 
         } while (opcaoEscolhida != 0);
@@ -75,6 +96,12 @@ public class Main {
     private static void adicionarPacienteNaFila() {
         Paciente paciente = cadastrarPaciente();
         fila.add(paciente);
+        try {
+            atualizarBdo();
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.out.println("Erro ao salvar o paciente no banco de dados.");
+        }
         System.out.println(fila);
     }
 
@@ -94,6 +121,40 @@ public class Main {
         }
 
         atenderPacientePelaPrioridade(prioridade);
+    }
+
+    private static void verificarIminencia() {
+
+        System.out.println("\n╔════════════════════════════════════════════╗");
+        System.out.println("║   ⏳ Verificar Iminência de Atendimento     ║");
+        System.out.println("╚════════════════════════════════════════════╝");
+        String cpf;
+        while (true) {
+            System.out.print("🆔  Digite o CPF do paciente: ");
+            cpf = scanner.nextLine().replace(".", "").replace("-", "");
+            if (cpf.matches("\\d{11}")) {
+                Paciente proximoPaciente = fila.peek();
+                if (proximoPaciente != null && proximoPaciente.getCpf().equals(cpf)) {
+                    System.out.println("O paciente " + proximoPaciente.getNomeCompleto() + " de cpf " + proximoPaciente.getCpf() + " é o próximo a ser atendido.");
+                } else {
+                    System.out.println("O paciente de cpf " + cpf + " não é o próximo a ser atendido.");
+                }
+                break;
+
+            } else {
+                System.out.println("❌ CPF inválido! Digite um CPF com 11 dígitos.");
+            }
+        }
+    }
+
+
+    private static void consultarDadosProximoPaciente() {
+        Paciente proximoPaciente = fila.peek();
+        if (proximoPaciente != null) {
+            System.out.println(proximoPaciente + "Tempo de permanência: " + calcularTempoDePermanencia(proximoPaciente.getDataHoraEnfileiramento()));
+        } else {
+            System.out.println("Fila Vazia!");
+        }
     }
 
     private static Paciente cadastrarPaciente() {
@@ -225,7 +286,8 @@ public class Main {
             case 5 -> {
                 for (Paciente paciente : fila) {
                     if (paciente.getPrioridade() == 5) {
-                        System.out.println(fila.remove(paciente));
+                        System.out.println(paciente);
+                        fila.remove(paciente);
                         break;
                     }
                 }
@@ -233,7 +295,8 @@ public class Main {
             case 4 -> {
                 for (Paciente paciente : fila) {
                     if (paciente.getPrioridade() == 4) {
-                        System.out.println(fila.remove(paciente));
+                        System.out.println(paciente);
+                        fila.remove(paciente);
                         break;
                     }
                 }
@@ -243,7 +306,8 @@ public class Main {
             case 3 -> {
                 for (Paciente paciente : fila) {
                     if (paciente.getPrioridade() == 3) {
-                        System.out.println(fila.remove(paciente));
+                        System.out.println(paciente);
+                        fila.remove(paciente);
                         break;
                     }
                 }
@@ -252,7 +316,8 @@ public class Main {
             case 2 -> {
                 for (Paciente paciente : fila) {
                     if (paciente.getPrioridade() == 2) {
-                        System.out.println(fila.remove(paciente));
+                        System.out.println(paciente);
+                        fila.remove(paciente);
                         break;
                     }
                 }
@@ -260,7 +325,8 @@ public class Main {
             case 1 -> {
                 for (Paciente paciente : fila) {
                     if (paciente.getPrioridade() == 1) {
-                        System.out.println(fila.remove(paciente));
+                        System.out.println(paciente);
+                        fila.remove(paciente);
                         break;
                     }
                 }
@@ -271,10 +337,41 @@ public class Main {
                 } else {
                     System.out.println("Fila Vazia!");
                 }
-
             }
 
             default -> System.out.println("Prioridade inválida!");
+
         }
+
+        try {
+            atualizarBdo();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static void atualizarBdo() throws IOException {
+        FileOutputStream fileOutputStream = new FileOutputStream("src/bdo/fila-de-pacientes.txt");
+        ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
+        objectOutputStream.writeObject(fila);
+    }
+
+    private static PriorityQueue<Paciente> carregarPacientesDoBdo() throws IOException, ClassNotFoundException {
+        FileInputStream fileInputStream = new FileInputStream("src/bdo/fila-de-pacientes.txt");
+        ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
+        fila = (PriorityQueue<Paciente>) objectInputStream.readObject();
+        return fila;
+    }
+
+    private static String calcularTempoDePermanencia(LocalDateTime dataHoraEnfileiramento) {
+        LocalDateTime agora = LocalDateTime.now();
+
+        Duration duracao = Duration.between(dataHoraEnfileiramento, agora);
+
+        long minutos = duracao.toMinutes();
+        long segundos = duracao.getSeconds() % 60;
+
+        return String.format("%d minutos e %d segundos", minutos, segundos);
+
     }
 }

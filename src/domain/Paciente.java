@@ -1,7 +1,10 @@
+package domain;
+
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-public class Paciente {
+public class Paciente implements Serializable {
     private String nomeCompleto;
     private String cpf;
     private char sexo;
@@ -83,7 +86,7 @@ public class Paciente {
 
     @Override
     public String toString() {
-        return "Paciente{" +
+        return "domain.Paciente{" +
                 "nomeCompleto='" + nomeCompleto + '\'' +
                 ", cpf='" + cpf + '\'' +
                 ", sexo=" + sexo +
