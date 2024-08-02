@@ -84,6 +84,22 @@ public class Paciente implements Serializable {
         this.dataHoraEnfileiramento = dataHoraEnfileiramento;
     }
 
+    public LocalDateTime getDataHoraDesenfileiramento() {
+        return dataHoraDesenfileiramento;
+    }
+
+    public void setDataHoraDesenfileiramento(LocalDateTime dataHoraDesenfileiramento) {
+        this.dataHoraDesenfileiramento = dataHoraDesenfileiramento;
+    }
+
+    public String getSenha() {
+        return senha;
+    }
+
+    public void setSenha(String senha) {
+        this.senha = senha;
+    }
+
     @Override
     public String toString() {
         return "domain.Paciente{" +

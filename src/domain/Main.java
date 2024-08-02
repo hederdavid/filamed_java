@@ -19,7 +19,6 @@ public class Main {
         } catch (IOException e) {
             System.out.println("Fila vazia no momento!");
         } catch (ClassNotFoundException e) {
-            e.printStackTrace();
             System.out.println("Ocorreu um erro ao tentar carregar os pacientes do banco de dados.");
         }
 
@@ -44,7 +43,7 @@ public class Main {
 
     public static void main(String[] args) {
 
-        int opcaoEscolhida = -1;
+        int opcaoEscolhida;
         do {
             System.out.println("\n╔═══════════════════════════════════════════════════════════════╗");
             System.out.println("║                                                               ║");
@@ -99,17 +98,16 @@ public class Main {
         try {
             atualizarBdo();
         } catch (IOException e) {
-            e.printStackTrace();
             System.out.println("Erro ao salvar o paciente no banco de dados.");
         }
-        System.out.println(fila);
+        System.out.println("\n Paciente incluído na fila com sucesso!");
     }
 
     private static void atenderProximoPaciente() {
         System.out.println("\n╔════════════════════════════════════════════╗");
         System.out.println("║           Atender Próximo Paciente         ║");
         System.out.println("╚════════════════════════════════════════════╝");
-        int prioridade = 0;
+        int prioridade;
         while (true) {
             System.out.print("⚠️ Digite '0' para selecionar automaticamente ou \nDigite a classificação de risco (5 - Emergência, 4 - Muito Urgente, 3 - Urgente, 2 - Pouco Urgente, 1 - Não Urgente): ");
             prioridade = scanner.nextInt();
@@ -135,9 +133,9 @@ public class Main {
             if (cpf.matches("\\d{11}")) {
                 Paciente proximoPaciente = fila.peek();
                 if (proximoPaciente != null && proximoPaciente.getCpf().equals(cpf)) {
-                    System.out.println("O paciente " + proximoPaciente.getNomeCompleto() + " de cpf " + proximoPaciente.getCpf() + " é o próximo a ser atendido.");
+                    System.out.println("\nO paciente " + proximoPaciente.getNomeCompleto() + " de cpf " + proximoPaciente.getCpf() + " é o próximo a ser atendido.");
                 } else {
-                    System.out.println("O paciente de cpf " + cpf + " não é o próximo a ser atendido.");
+                    System.out.println("\nO paciente de cpf " + cpf + " não é o próximo a ser atendido.");
                 }
                 break;
 
@@ -151,7 +149,9 @@ public class Main {
     private static void consultarDadosProximoPaciente() {
         Paciente proximoPaciente = fila.peek();
         if (proximoPaciente != null) {
-            System.out.println(proximoPaciente + "Tempo de permanência: " + calcularTempoDePermanencia(proximoPaciente.getDataHoraEnfileiramento()));
+            System.out.println("Nome: " + proximoPaciente.getNomeCompleto());
+            System.out.println("Senha: " + proximoPaciente.getSenha());
+            System.out.println("Tempo de espera atual: " + calcularTempoDePermanencia(proximoPaciente.getDataHoraEnfileiramento()));
         } else {
             System.out.println("Fila Vazia!");
         }
@@ -191,7 +191,7 @@ public class Main {
             }
         }
 
-        LocalDate dataNascimento = null;
+        LocalDate dataNascimento;
 
         while (true) {
             System.out.print("📅  Digite a data de nascimento do paciente (dd/MM/yyyy): ");
@@ -207,7 +207,7 @@ public class Main {
         System.out.print("🤕  Relato de queixas e sintomas: ");
         String relatoQueixaSintomas = scanner.nextLine();
 
-        int prioridade = 0;
+        int prioridade;
         while (true) {
             try {
                 System.out.print("🚨  Digite a prioridade do paciente (1 - NÃO URGENTE, 2 - POUCO URGENTE, 3 - URGENTE, " +
@@ -235,7 +235,7 @@ public class Main {
     private static String definirSenhaPaciente(int prioridade) {
         String senha = null;
         switch (prioridade) {
-            case 5 ->  senha = "R-" + qtdPacientesEnfileiradosPorPrioridade.get("EMERGENTE").toString();
+            case 5 -> senha = "R-" + qtdPacientesEnfileiradosPorPrioridade.get("EMERGENTE").toString();
             case 4 -> senha = "O-" + qtdPacientesEnfileiradosPorPrioridade.get("MUITO URGENTE").toString();
             case 3 -> senha = "Y-" + qtdPacientesEnfileiradosPorPrioridade.get("URGENTE").toString();
             case 2 -> senha = "G-" + qtdPacientesEnfileiradosPorPrioridade.get("POUCO URGENTE").toString();
@@ -282,65 +282,43 @@ public class Main {
     }
 
     private static void atenderPacientePelaPrioridade(int prioridade) {
-        switch(prioridade) {
-            case 5 -> {
+        switch (prioridade) {
+            case 5, 4, 3, 2, 1 -> {
+                boolean encontrado = false;
                 for (Paciente paciente : fila) {
-                    if (paciente.getPrioridade() == 5) {
-                        System.out.println(paciente);
+                    if (paciente.getPrioridade() == prioridade) {
+                        System.out.println("\n╔════════════════════════════════════════════╗");
+                        System.out.println("║           🏥 Paciente Atendido             ║");
+                        System.out.println("╚════════════════════════════════════════════╝");
+                        System.out.println("Nome: " + paciente.getNomeCompleto());
+                        System.out.println("Senha: " + paciente.getSenha());
+                        System.out.println("Tempo de espera: " + calcularTempoDePermanencia(paciente.getDataHoraEnfileiramento()));
+
                         fila.remove(paciente);
+                        encontrado = true;
                         break;
                     }
                 }
-            }
-            case 4 -> {
-                for (Paciente paciente : fila) {
-                    if (paciente.getPrioridade() == 4) {
-                        System.out.println(paciente);
-                        fila.remove(paciente);
-                        break;
-                    }
-                }
-
-            }
-
-            case 3 -> {
-                for (Paciente paciente : fila) {
-                    if (paciente.getPrioridade() == 3) {
-                        System.out.println(paciente);
-                        fila.remove(paciente);
-                        break;
-                    }
+                if (!encontrado) {
+                    System.out.println("Nenhum paciente encontrado com prioridade " + prioridade);
                 }
             }
 
-            case 2 -> {
-                for (Paciente paciente : fila) {
-                    if (paciente.getPrioridade() == 2) {
-                        System.out.println(paciente);
-                        fila.remove(paciente);
-                        break;
-                    }
-                }
-            }
-            case 1 -> {
-                for (Paciente paciente : fila) {
-                    if (paciente.getPrioridade() == 1) {
-                        System.out.println(paciente);
-                        fila.remove(paciente);
-                        break;
-                    }
-                }
-            }
             case 0 -> {
                 if (!fila.isEmpty()) {
-                    System.out.println(fila.poll());
+                    Paciente paciente = fila.poll();
+                    System.out.println("╔════════════════════════════════════════════╗");
+                    System.out.println("║           🏥 Paciente Atendido             ║");
+                    System.out.println("╚════════════════════════════════════════════╝");
+                    System.out.println("Nome: " + paciente.getNomeCompleto());
+                    System.out.println("Senha: " + paciente.getSenha());
+                    System.out.println("Tempo de espera: " + calcularTempoDePermanencia(paciente.getDataHoraEnfileiramento()));
                 } else {
                     System.out.println("Fila Vazia!");
                 }
             }
 
             default -> System.out.println("Prioridade inválida!");
-
         }
 
         try {
@@ -372,6 +350,5 @@ public class Main {
         long segundos = duracao.getSeconds() % 60;
 
         return String.format("%d minutos e %d segundos", minutos, segundos);
-
     }
 }
