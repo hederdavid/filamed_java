@@ -5,6 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="1b474fe8-86f3-4315-b2b2-6a4ecec59c23" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/src/testes/PacienteManager.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/bdo/fila-de-pacientes.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/bdo/fila-de-pacientes.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/domain/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/domain/Main.java" afterDir="false" />
@@ -38,6 +39,7 @@
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
     "Application.Main.executor": "Debug",
+    "Application.PacienteManager.executor": "Run",
     "Application.PacientesParaTestes.executor": "Run",
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
@@ -53,7 +55,7 @@
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
-  <component name="RunManager" selected="Application.Main">
+  <component name="RunManager">
     <configuration name="Main" type="Application" factoryName="Application" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="domain.Main" />
       <module name="filamed_java" />
@@ -101,7 +103,7 @@
       <workItem from="1722544223392" duration="251000" />
       <workItem from="1722601322582" duration="4703000" />
       <workItem from="1722606216541" duration="9312000" />
-      <workItem from="1722697526035" duration="1833000" />
+      <workItem from="1722697526035" duration="4587000" />
     </task>
     <servers />
   </component>
@@ -111,14 +113,15 @@
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
-        <line-breakpoint enabled="true" type="java-method">
+        <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/domain/Main.java</url>
-          <line>55</line>
-          <properties class="domain.Main" method="verificarQuantidadeDePacientesPorFaixaEtaria">
-            <option name="EMULATED" value="true" />
-            <option name="WATCH_EXIT" value="false" />
-          </properties>
-          <option name="timeStamp" value="1" />
+          <line>410</line>
+          <option name="timeStamp" value="2" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/domain/Main.java</url>
+          <line>20</line>
+          <option name="timeStamp" value="3" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

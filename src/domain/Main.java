@@ -192,11 +192,74 @@ public class Main {
     }
 
     private static void consultarEstatisticas() {
+        System.out.println("\n╔═══════════════════════════════════════════════════════════════╗");
+        System.out.println("║                                                               ║");
+        System.out.println("║                  CONSULTAS DE CARÁTER ESTATÍSTICO             ║");
+        System.out.println("║                                                               ║");
+        System.out.println("╠═══════════════════════════════════════════════════════════════╣");
+        System.out.println("║                                                               ║");
+        System.out.println("║  1. Quantidade de pacientes no momento por fila               ║");
+        System.out.println("║  2. Quantidade total de pacientes por faixa etária            ║");
+        System.out.println("║     (crianças, adolescentes, adultos e idosos)                ║");
+        System.out.println("║  3. Tempo médio de permanência em fila de atendimento         ║");
+        System.out.println("║  4. Percentual de pacientes em tempo inferior ao recomendado  ║");
+        System.out.println("║  0. Voltar ao menu principal                                  ║");
+        System.out.println("║                                                               ║");
+        System.out.println("╚═══════════════════════════════════════════════════════════════╝");
+        System.out.print("Opção escolhida: ");
+        int opcaoEscolhida = scanner.nextInt();
+
+        switch (opcaoEscolhida) {
+            case 1 -> quantidadeDePacientesAtual();
+            case 2 -> quantidadeDePacientesPorFaixaEtaria();
+            case 3 -> tempoMedioDePermanencia();
+            case 4 -> percentualPacientesTempoMedioRecomendado();
+            default -> System.out.println("Opção inválida!");
+        }
 
     }
 
+    private static void quantidadeDePacientesAtual() {
+        int qtdEmergente = 0, qtdMuitoUrgente = 0, qtdUrgente = 0, qtdPoucoUrgente = 0, qtdNaoUrgente = 0;
 
-//  Métodos auxiliares
+        for (Paciente paciente : fila) {
+            switch (paciente.getPrioridade()) {
+                case 5 -> qtdEmergente++;
+                case 4 -> qtdMuitoUrgente++;
+                case 3 -> qtdUrgente++;
+                case 2 -> qtdPoucoUrgente++;
+                case 1 -> qtdNaoUrgente++;
+                default -> System.out.println("Erro ao calcular qtd de pacientes na fila.");
+            }
+        }
+
+        System.out.println("----------------------------------------");
+        System.out.println("Total de pacientes na fila: " + (qtdEmergente + qtdMuitoUrgente + qtdUrgente + qtdPoucoUrgente
+                + qtdNaoUrgente));
+        System.out.println("Emergente: " + qtdEmergente);
+        System.out.println("Muito urgente: " + qtdMuitoUrgente);
+        System.out.println("Urgente: " + qtdUrgente);
+        System.out.println("Pouco urgente: " + qtdPoucoUrgente);
+        System.out.println("Não urgente: " + qtdNaoUrgente);
+        System.out.println("----------------------------------------");
+    }
+
+    private static void tempoMedioDePermanencia() {
+    }
+
+    private static void percentualPacientesTempoMedioRecomendado() {
+    }
+
+    private static void quantidadeDePacientesPorFaixaEtaria() {
+        System.out.println("----------------------------------------");
+        System.out.println("Crianças: " + qtdPacientesPorFaixaEtaria.get("CRIANÇAS"));
+        System.out.println("Adolescentes: " + qtdPacientesPorFaixaEtaria.get("ADOLESCENTES"));
+        System.out.println("Adultos: " + qtdPacientesPorFaixaEtaria.get("ADULTOS"));
+        System.out.println("Idosos: " + qtdPacientesPorFaixaEtaria.get("IDOSOS"));
+        System.out.println("----------------------------------------");
+    }
+
+
     private static Paciente cadastrarPaciente() {
         System.out.println("\n╔════════════════════════════════════════════╗");
         System.out.println("║             Cadastrar Paciente             ║");
@@ -374,12 +437,16 @@ public class Main {
         FileOutputStream fileOutputStream = new FileOutputStream("src/bdo/fila-de-pacientes.txt");
         ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
         objectOutputStream.writeObject(fila);
+        objectOutputStream.close();
+        fileOutputStream.close();
     }
 
     private static PriorityQueue<Paciente> carregarPacientesDoBdo() throws IOException, ClassNotFoundException {
         FileInputStream fileInputStream = new FileInputStream("src/bdo/fila-de-pacientes.txt");
         ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
         fila = (PriorityQueue<Paciente>) objectInputStream.readObject();
+        objectInputStream.close();
+        fileInputStream.close();
         return fila;
     }
 
