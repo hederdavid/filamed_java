@@ -8,7 +8,6 @@
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/bdo/fila-de-pacientes.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/bdo/fila-de-pacientes.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/domain/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/domain/Main.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/domain/Paciente.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/domain/Paciente.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -38,7 +37,7 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
-    "Application.Main.executor": "Run",
+    "Application.Main.executor": "Debug",
     "Application.PacientesParaTestes.executor": "Run",
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
@@ -101,11 +100,27 @@
       <workItem from="1722514282261" duration="2650000" />
       <workItem from="1722544223392" duration="251000" />
       <workItem from="1722601322582" duration="4703000" />
-      <workItem from="1722606216541" duration="6855000" />
+      <workItem from="1722606216541" duration="9312000" />
+      <workItem from="1722697526035" duration="1833000" />
     </task>
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="java-method">
+          <url>file://$PROJECT_DIR$/src/domain/Main.java</url>
+          <line>55</line>
+          <properties class="domain.Main" method="verificarQuantidadeDePacientesPorFaixaEtaria">
+            <option name="EMULATED" value="true" />
+            <option name="WATCH_EXIT" value="false" />
+          </properties>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>

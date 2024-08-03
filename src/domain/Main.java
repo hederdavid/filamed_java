@@ -4,6 +4,7 @@ import java.io.*;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Period;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.*;
@@ -11,9 +12,11 @@ import java.util.*;
 public class Main {
     private static PriorityQueue<Paciente> fila = new PriorityQueue<>(new PacienteComparator());
     private static Map<String, Integer> qtdPacientesEnfileiradosPorPrioridade;
+    private static Map<String, Integer> qtdPacientesPorFaixaEtaria;
     private static Scanner scanner = new Scanner(System.in);
 
     static {
+        // Inicialização de algumas variáveis
         try {
             fila = carregarPacientesDoBdo();
         } catch (IOException e) {
@@ -21,6 +24,15 @@ public class Main {
         } catch (ClassNotFoundException e) {
             System.out.println("Ocorreu um erro ao tentar carregar os pacientes do banco de dados.");
         }
+
+        qtdPacientesPorFaixaEtaria = new HashMap<>();
+        qtdPacientesPorFaixaEtaria.put("CRIANÇAS", 0);
+        qtdPacientesPorFaixaEtaria.put("ADOLESCENTES", 0);
+        qtdPacientesPorFaixaEtaria.put("ADULTOS", 0);
+        qtdPacientesPorFaixaEtaria.put("IDOSOS", 0);
+
+        //Atualiza o hashmap acima
+        verificarQuantidadeDePacientesPorFaixaEtaria();
 
         qtdPacientesEnfileiradosPorPrioridade = new HashMap<>();
         qtdPacientesEnfileiradosPorPrioridade.put("EMERGENTE", verificarQuantidadeDePacientesPorPrioridade(5));
@@ -39,6 +51,26 @@ public class Main {
             }
         }
         return qtd;
+    }
+
+    private static void verificarQuantidadeDePacientesPorFaixaEtaria() {
+        for (Paciente paciente : fila) {
+            int idade = calcularIdade(paciente.getDataNascimento());
+            if (idade >= 0 && idade <= 11) {
+                int qtdAtual = qtdPacientesPorFaixaEtaria.get("CRIANÇAS");
+                qtdPacientesPorFaixaEtaria.put("CRIANÇAS", qtdAtual + 1);
+            } else if (idade >= 12 && idade <= 17) {
+                int qtdAtual = qtdPacientesPorFaixaEtaria.get("ADOLESCENTES");
+                qtdPacientesPorFaixaEtaria.put("ADOLESCENTES", qtdAtual + 1);
+            } else if (idade >= 18 && idade <= 59) {
+                int qtdAtual = qtdPacientesPorFaixaEtaria.get("ADULTOS");
+                qtdPacientesPorFaixaEtaria.put("ADULTOS", qtdAtual + 1);
+            } else if (idade >= 60) {
+                int qtdAtual = qtdPacientesPorFaixaEtaria.get("IDOSOS");
+                qtdPacientesPorFaixaEtaria.put("IDOSOS", qtdAtual + 1);
+            }
+        }
+
     }
 
     public static void main(String[] args) {
@@ -80,6 +112,7 @@ public class Main {
                 case 2 -> atenderProximoPaciente();
                 case 3 -> verificarIminencia();
                 case 4 -> consultarDadosProximoPaciente();
+                case 5 -> consultarEstatisticas();
                 case 0 -> {
                     try {
                         atualizarBdo();
@@ -95,6 +128,7 @@ public class Main {
     private static void adicionarPacienteNaFila() {
         Paciente paciente = cadastrarPaciente();
         fila.add(paciente);
+        atualizarQtdPacientesPorFaixaEtaria(1, paciente.getDataNascimento());
         try {
             atualizarBdo();
         } catch (IOException e) {
@@ -157,6 +191,12 @@ public class Main {
         }
     }
 
+    private static void consultarEstatisticas() {
+
+    }
+
+
+//  Métodos auxiliares
     private static Paciente cadastrarPaciente() {
         System.out.println("\n╔════════════════════════════════════════════╗");
         System.out.println("║             Cadastrar Paciente             ║");
@@ -240,7 +280,7 @@ public class Main {
             case 3 -> senha = "Y-" + qtdPacientesEnfileiradosPorPrioridade.get("URGENTE").toString();
             case 2 -> senha = "G-" + qtdPacientesEnfileiradosPorPrioridade.get("POUCO URGENTE").toString();
             case 1 -> senha = "B-" + qtdPacientesEnfileiradosPorPrioridade.get("NÃO URGENTE").toString();
-            default -> System.out.println("Algo deu errado ao tentar definir a senha do paciente");
+            default -> System.out.println("❌ Algo deu errado ao tentar definir a senha do paciente");
         }
         return senha;
     }
@@ -273,7 +313,7 @@ public class Main {
                 qtdPacientesEnfileiradosPorPrioridade.put("NÃO URGENTE", quantidadeAtualizada + 1);
             }
 
-            default -> System.out.println("Algo deu errado ao atualizar a quantidade de pacientes");
+            default -> System.out.println("❌ Algo deu errado ao atualizar a quantidade de pacientes");
         }
     }
 
@@ -295,18 +335,20 @@ public class Main {
                         System.out.println("Tempo de espera: " + calcularTempoDePermanencia(paciente.getDataHoraEnfileiramento()));
 
                         fila.remove(paciente);
+                        atualizarQtdPacientesPorFaixaEtaria(-1, paciente.getDataNascimento());
                         encontrado = true;
                         break;
                     }
                 }
                 if (!encontrado) {
-                    System.out.println("Nenhum paciente encontrado com prioridade " + prioridade);
+                    System.out.println("❌ Nenhum paciente encontrado com prioridade " + prioridade);
                 }
             }
 
             case 0 -> {
                 if (!fila.isEmpty()) {
                     Paciente paciente = fila.poll();
+                    atualizarQtdPacientesPorFaixaEtaria(-1, paciente.getDataNascimento());
                     System.out.println("╔════════════════════════════════════════════╗");
                     System.out.println("║           🏥 Paciente Atendido             ║");
                     System.out.println("╚════════════════════════════════════════════╝");
@@ -314,11 +356,11 @@ public class Main {
                     System.out.println("Senha: " + paciente.getSenha());
                     System.out.println("Tempo de espera: " + calcularTempoDePermanencia(paciente.getDataHoraEnfileiramento()));
                 } else {
-                    System.out.println("Fila Vazia!");
+                    System.out.println("❌ Fila Vazia!");
                 }
             }
 
-            default -> System.out.println("Prioridade inválida!");
+            default -> System.out.println("❌ Prioridade inválida!");
         }
 
         try {
@@ -350,5 +392,48 @@ public class Main {
         long segundos = duracao.getSeconds() % 60;
 
         return String.format("%d minutos e %d segundos", minutos, segundos);
+    }
+
+    private static int calcularIdade(LocalDate dataNascimento) {
+        LocalDate dataAtual = LocalDate.now();
+        return Period.between(dataNascimento, dataAtual).getYears();
+    }
+
+
+    //Passe 1 para acrescentar e -1 para diminuir
+    private static void atualizarQtdPacientesPorFaixaEtaria(int acrescentarOuDiminuir, LocalDate dataNascimento) {
+        int idade = calcularIdade(dataNascimento);
+        int qtdAtual = 0;
+
+        if (acrescentarOuDiminuir == 1) {
+            if (idade >= 0 && idade <= 11) {
+                qtdAtual = qtdPacientesPorFaixaEtaria.get("CRIANÇAS");
+                qtdPacientesPorFaixaEtaria.put("CRIANÇAS", qtdAtual + 1);
+            } else if (idade >= 12 && idade <= 17) {
+                qtdAtual = qtdPacientesPorFaixaEtaria.get("ADOLESCENTES");
+                qtdPacientesPorFaixaEtaria.put("ADOLESCENTES", qtdAtual + 1);
+            } else if (idade >= 18 && idade <= 59) {
+                qtdAtual = qtdPacientesPorFaixaEtaria.get("ADULTOS");
+                qtdPacientesPorFaixaEtaria.put("ADULTOS", qtdAtual + 1);
+            } else if (idade >= 60) {
+                qtdAtual = qtdPacientesPorFaixaEtaria.get("IDOSOS");
+                qtdPacientesPorFaixaEtaria.put("IDOSOS", qtdAtual + 1);
+            }
+
+        } else if (acrescentarOuDiminuir == -1) {
+            if (idade >= 0 && idade <= 11) {
+                qtdAtual = qtdPacientesPorFaixaEtaria.get("CRIANÇAS");
+                qtdPacientesPorFaixaEtaria.put("CRIANÇAS", qtdAtual - 1);
+            } else if (idade >= 12 && idade <= 17) {
+                qtdAtual = qtdPacientesPorFaixaEtaria.get("ADOLESCENTES");
+                qtdPacientesPorFaixaEtaria.put("ADOLESCENTES", qtdAtual - 1);
+            } else if (idade >= 18 && idade <= 59) {
+                qtdAtual = qtdPacientesPorFaixaEtaria.get("ADULTOS");
+                qtdPacientesPorFaixaEtaria.put("ADULTOS", qtdAtual - 1);
+            } else if (idade >= 60) {
+                qtdAtual = qtdPacientesPorFaixaEtaria.get("IDOSOS");
+                qtdPacientesPorFaixaEtaria.put("IDOSOS", qtdAtual - 1);
+            }
+        }
     }
 }
