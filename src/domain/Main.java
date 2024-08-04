@@ -88,7 +88,7 @@ public class Main {
             System.out.println("║  1.  Adicionar paciente                                       ║");
             System.out.println("║  2.  Atender próximo paciente                                 ║");
             System.out.println("║  3.  Verificar iminência de atendimento                       ║");
-            System.out.println("║  4.  Consultar próximo paciente de uma fila                   ║");
+            System.out.println("║  4.  Consultar dados próximo paciente                         ║");
             System.out.println("║  5.  Consultar estatísticas                                   ║");
             System.out.println("║  0.  Sair                                                     ║");
             System.out.println("║                                                               ║");
@@ -134,7 +134,7 @@ public class Main {
         } catch (IOException e) {
             System.out.println("Erro ao salvar o paciente no banco de dados.");
         }
-        System.out.println("\n Paciente incluído na fila com sucesso!");
+        System.out.println("\n ✅ Paciente incluído na fila com sucesso!");
     }
 
     private static void atenderProximoPaciente() {
@@ -187,7 +187,7 @@ public class Main {
             System.out.println("Senha: " + proximoPaciente.getSenha());
             System.out.println("Tempo de espera atual: " + calcularTempoDePermanencia(proximoPaciente.getDataHoraEnfileiramento()));
         } else {
-            System.out.println("Fila Vazia!");
+            System.out.println("❌ Fila Vazia!");
         }
     }
 
@@ -203,7 +203,6 @@ public class Main {
         System.out.println("║     (crianças, adolescentes, adultos e idosos)                ║");
         System.out.println("║  3. Tempo médio de permanência em fila de atendimento         ║");
         System.out.println("║  4. Percentual de pacientes em tempo inferior ao recomendado  ║");
-        System.out.println("║  0. Voltar ao menu principal                                  ║");
         System.out.println("║                                                               ║");
         System.out.println("╚═══════════════════════════════════════════════════════════════╝");
         System.out.print("Opção escolhida: ");
@@ -236,11 +235,11 @@ public class Main {
         System.out.println("----------------------------------------");
         System.out.println("Total de pacientes na fila: " + (qtdEmergente + qtdMuitoUrgente + qtdUrgente + qtdPoucoUrgente
                 + qtdNaoUrgente));
-        System.out.println("Emergente: " + qtdEmergente);
-        System.out.println("Muito urgente: " + qtdMuitoUrgente);
-        System.out.println("Urgente: " + qtdUrgente);
-        System.out.println("Pouco urgente: " + qtdPoucoUrgente);
-        System.out.println("Não urgente: " + qtdNaoUrgente);
+        System.out.println("\uD83D\uDFE5Emergente: " + qtdEmergente);
+        System.out.println("\uD83D\uDFE7Muito urgente: " + qtdMuitoUrgente);
+        System.out.println("\uD83D\uDFE8Urgente: " + qtdUrgente);
+        System.out.println("\uD83D\uDFE9Pouco urgente: " + qtdPoucoUrgente);
+        System.out.println("\uD83D\uDFE6Não urgente: " + qtdNaoUrgente);
         System.out.println("----------------------------------------");
     }
 
@@ -469,7 +468,7 @@ public class Main {
                     }
                 }
                 if (!encontrado) {
-                    System.out.println("❌ Nenhum paciente encontrado com prioridade " + prioridade);
+                    System.out.println("❌ Fila Vazia! ");
                 }
             }
 
