@@ -470,7 +470,7 @@ public class Main {
     //Passe 1 para acrescentar e -1 para diminuir
     private static void atualizarQtdPacientesPorFaixaEtaria(int acrescentarOuDiminuir, LocalDate dataNascimento) {
         int idade = calcularIdade(dataNascimento);
-        int qtdAtual = 0;
+        int qtdAtual;
 
         if (acrescentarOuDiminuir == 1) {
             if (idade >= 0 && idade <= 11) {
