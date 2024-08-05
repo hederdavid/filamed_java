@@ -11,16 +11,19 @@ import java.util.*;
 
 public class Main {
     private static PriorityQueue<Paciente> fila = new PriorityQueue<>(new PacienteComparator());
-    private static Map<String, Integer> qtdPacientesEnfileiradosPorPrioridade;
-    private static Map<String, Integer> qtdPacientesPorFaixaEtaria;
-    private static Scanner scanner = new Scanner(System.in);
+    private static List<Paciente> pacientesAtendidos = new ArrayList<>();
+    private static final Map<String, Integer> qtdAtualPacientesEnfileiradosPorPrioridade;
+    private static final Map<String, Integer> qtdDiariaPacientesEnfileiradosPorPrioridade;
+    private static final Map<String, Integer> qtdPacientesPorFaixaEtaria;
+    private static final Scanner scanner = new Scanner(System.in);
 
     static {
         // Inicialização de algumas variáveis
         try {
-            fila = carregarPacientesDoBdo();
+            fila = (PriorityQueue<Paciente>) carregarPacientesDoBdo(fila);
+            pacientesAtendidos = (List<Paciente>) carregarPacientesDoBdo(pacientesAtendidos);
         } catch (IOException e) {
-            System.out.println("Fila vazia no momento!");
+            System.out.println("Fila atual ou lista de pacientes atendidos vazia no momento!");
         } catch (ClassNotFoundException e) {
             System.out.println("Ocorreu um erro ao tentar carregar os pacientes do banco de dados.");
         }
@@ -34,13 +37,29 @@ public class Main {
         //Atualiza o hashmap acima
         verificarQuantidadeDePacientesPorFaixaEtaria();
 
-        qtdPacientesEnfileiradosPorPrioridade = new HashMap<>();
-        qtdPacientesEnfileiradosPorPrioridade.put("EMERGENTE", verificarQuantidadeDePacientesPorPrioridade(5));
-        qtdPacientesEnfileiradosPorPrioridade.put("MUITO URGENTE", verificarQuantidadeDePacientesPorPrioridade(4));
-        qtdPacientesEnfileiradosPorPrioridade.put("URGENTE", verificarQuantidadeDePacientesPorPrioridade(3));
-        qtdPacientesEnfileiradosPorPrioridade.put("POUCO URGENTE", verificarQuantidadeDePacientesPorPrioridade(2));
-        qtdPacientesEnfileiradosPorPrioridade.put("NÃO URGENTE", verificarQuantidadeDePacientesPorPrioridade(1));
+        qtdAtualPacientesEnfileiradosPorPrioridade = new HashMap<>();
+        qtdAtualPacientesEnfileiradosPorPrioridade.put("EMERGENTE", verificarQuantidadeDePacientesPorPrioridade(5,
+                fila));
+        qtdAtualPacientesEnfileiradosPorPrioridade.put("MUITO URGENTE", verificarQuantidadeDePacientesPorPrioridade(4,
+                fila));
+        qtdAtualPacientesEnfileiradosPorPrioridade.put("URGENTE", verificarQuantidadeDePacientesPorPrioridade(3,
+                fila));
+        qtdAtualPacientesEnfileiradosPorPrioridade.put("POUCO URGENTE", verificarQuantidadeDePacientesPorPrioridade(2,
+                fila));
+        qtdAtualPacientesEnfileiradosPorPrioridade.put("NÃO URGENTE", verificarQuantidadeDePacientesPorPrioridade(1,
+                fila));
 
+        qtdDiariaPacientesEnfileiradosPorPrioridade = new HashMap<>();
+        qtdDiariaPacientesEnfileiradosPorPrioridade.put("EMERGENTE", verificarQuantidadeDePacientesPorPrioridade(5,
+                pacientesAtendidos));
+        qtdDiariaPacientesEnfileiradosPorPrioridade.put("MUITO URGENTE", verificarQuantidadeDePacientesPorPrioridade(4,
+                pacientesAtendidos));
+        qtdDiariaPacientesEnfileiradosPorPrioridade.put("URGENTE", verificarQuantidadeDePacientesPorPrioridade(3,
+                pacientesAtendidos));
+        qtdDiariaPacientesEnfileiradosPorPrioridade.put("POUCO URGENTE", verificarQuantidadeDePacientesPorPrioridade(2,
+                pacientesAtendidos));
+        qtdDiariaPacientesEnfileiradosPorPrioridade.put("NÃO URGENTE", verificarQuantidadeDePacientesPorPrioridade(1,
+                pacientesAtendidos));
     }
 
     private static void verificarQuantidadeDePacientesPorFaixaEtaria() {
@@ -62,15 +81,16 @@ public class Main {
         }
     }
 
-    private static int verificarQuantidadeDePacientesPorPrioridade(int prioridade) {
+    private static int verificarQuantidadeDePacientesPorPrioridade(int prioridade, Collection<Paciente> colecao) {
         int qtd = 0;
-        for (Paciente paciente : fila) {
+        for (Paciente paciente : colecao) {
             if (paciente.getPrioridade() == prioridade) {
                 qtd++;
             }
         }
         return qtd;
     }
+
 
     public static void main(String[] args) {
 
@@ -114,7 +134,8 @@ public class Main {
                 case 5 -> consultarEstatisticas();
                 case 0 -> {
                     try {
-                        atualizarBdo();
+                        atualizarBdo(fila);
+                        atualizarBdo(pacientesAtendidos);
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
@@ -129,7 +150,7 @@ public class Main {
         fila.add(paciente);
         atualizarQtdPacientesPorFaixaEtaria(1, paciente.getDataNascimento());
         try {
-            atualizarBdo();
+            atualizarBdo(fila);
             System.out.println("\n ✅ Paciente incluído na fila com sucesso!");
         } catch (IOException e) {
             System.out.println("Erro ao salvar o paciente no banco de dados.");
@@ -150,7 +171,6 @@ public class Main {
                 System.out.println("❌ Prioridade inválida! Digite um número entre 1 e 5.");
             }
         }
-
         atenderPacientePelaPrioridade(prioridade);
     }
 
@@ -401,11 +421,11 @@ public class Main {
     private static String definirSenhaPaciente(int prioridade) {
         String senha = null;
         switch (prioridade) {
-            case 5 -> senha = "R-" + qtdPacientesEnfileiradosPorPrioridade.get("EMERGENTE").toString();
-            case 4 -> senha = "O-" + qtdPacientesEnfileiradosPorPrioridade.get("MUITO URGENTE").toString();
-            case 3 -> senha = "Y-" + qtdPacientesEnfileiradosPorPrioridade.get("URGENTE").toString();
-            case 2 -> senha = "G-" + qtdPacientesEnfileiradosPorPrioridade.get("POUCO URGENTE").toString();
-            case 1 -> senha = "B-" + qtdPacientesEnfileiradosPorPrioridade.get("NÃO URGENTE").toString();
+            case 5 -> senha = "R-" + qtdDiariaPacientesEnfileiradosPorPrioridade.get("EMERGENTE").toString();
+            case 4 -> senha = "O-" + qtdDiariaPacientesEnfileiradosPorPrioridade.get("MUITO URGENTE").toString();
+            case 3 -> senha = "Y-" + qtdDiariaPacientesEnfileiradosPorPrioridade.get("URGENTE").toString();
+            case 2 -> senha = "G-" + qtdDiariaPacientesEnfileiradosPorPrioridade.get("POUCO URGENTE").toString();
+            case 1 -> senha = "B-" + qtdDiariaPacientesEnfileiradosPorPrioridade.get("NÃO URGENTE").toString();
             default -> System.out.println("❌ Algo deu errado ao tentar definir a senha do paciente");
         }
         return senha;
@@ -414,29 +434,39 @@ public class Main {
     private static void atualizarQtdPacientesEnfileiradosPorPrioridade(int prioridade) {
         switch (prioridade) {
             case 5 -> {
-                int quantidadeAtual = qtdPacientesEnfileiradosPorPrioridade.get("EMERGENTE");
-                qtdPacientesEnfileiradosPorPrioridade.put("EMERGENTE", quantidadeAtual + 1);
+                int quantidadeAtual = qtdAtualPacientesEnfileiradosPorPrioridade.get("EMERGENTE");
+                qtdAtualPacientesEnfileiradosPorPrioridade.put("EMERGENTE", quantidadeAtual + 1);
+                quantidadeAtual = qtdDiariaPacientesEnfileiradosPorPrioridade.get("EMERGENTE");
+                qtdDiariaPacientesEnfileiradosPorPrioridade.put("EMERGENTE", quantidadeAtual + 1);
             }
 
             case 4 -> {
-                int quantidadeAtual = qtdPacientesEnfileiradosPorPrioridade.get("MUITO URGENTE");
-                qtdPacientesEnfileiradosPorPrioridade.put("MUITO URGENTE", quantidadeAtual + 1);
+                int quantidadeAtual = qtdAtualPacientesEnfileiradosPorPrioridade.get("MUITO URGENTE");
+                qtdAtualPacientesEnfileiradosPorPrioridade.put("MUITO URGENTE", quantidadeAtual + 1);
+                quantidadeAtual = qtdDiariaPacientesEnfileiradosPorPrioridade.get("EMERGENTE");
+                qtdDiariaPacientesEnfileiradosPorPrioridade.put("EMERGENTE", quantidadeAtual + 1);
             }
 
             case 3 -> {
-                int quantidadeAtualizada = qtdPacientesEnfileiradosPorPrioridade.get("URGENTE");
-                qtdPacientesEnfileiradosPorPrioridade.put("URGENTE", quantidadeAtualizada + 1);
+                int quantidadeAtual = qtdAtualPacientesEnfileiradosPorPrioridade.get("URGENTE");
+                qtdAtualPacientesEnfileiradosPorPrioridade.put("URGENTE", quantidadeAtual + 1);
+                quantidadeAtual = qtdDiariaPacientesEnfileiradosPorPrioridade.get("EMERGENTE");
+                qtdDiariaPacientesEnfileiradosPorPrioridade.put("EMERGENTE", quantidadeAtual + 1);
             }
 
             case 2 -> {
-                int quantidadeAtualizada = qtdPacientesEnfileiradosPorPrioridade.get("POUCO URGENTE");
-                qtdPacientesEnfileiradosPorPrioridade.put("POUCO URGENTE", quantidadeAtualizada + 1);
+                int quantidadeAtual = qtdAtualPacientesEnfileiradosPorPrioridade.get("POUCO URGENTE");
+                qtdAtualPacientesEnfileiradosPorPrioridade.put("POUCO URGENTE", quantidadeAtual + 1);
+                quantidadeAtual = qtdDiariaPacientesEnfileiradosPorPrioridade.get("EMERGENTE");
+                qtdDiariaPacientesEnfileiradosPorPrioridade.put("EMERGENTE", quantidadeAtual + 1);
 
             }
 
             case 1 -> {
-                int quantidadeAtualizada = qtdPacientesEnfileiradosPorPrioridade.get("NÃO URGENTE");
-                qtdPacientesEnfileiradosPorPrioridade.put("NÃO URGENTE", quantidadeAtualizada + 1);
+                int quantidadeAtual = qtdAtualPacientesEnfileiradosPorPrioridade.get("NÃO URGENTE");
+                qtdAtualPacientesEnfileiradosPorPrioridade.put("NÃO URGENTE", quantidadeAtual + 1);
+                quantidadeAtual = qtdDiariaPacientesEnfileiradosPorPrioridade.get("EMERGENTE");
+                qtdDiariaPacientesEnfileiradosPorPrioridade.put("EMERGENTE", quantidadeAtual + 1);
             }
 
             default -> System.out.println("❌ Algo deu errado ao atualizar a quantidade de pacientes");
@@ -460,6 +490,13 @@ public class Main {
                         System.out.println("Senha: " + paciente.getSenha());
                         System.out.println("Tempo de espera: " + calcularTempoDePermanencia(paciente.getDataHoraEnfileiramento()));
 
+                        paciente.setDataHoraDesenfileiramento(LocalDateTime.now());
+                        pacientesAtendidos.add(paciente);
+                        try {
+                            atualizarBdo(pacientesAtendidos);
+                        } catch (IOException e) {
+                            System.out.println("Erro ao salvar o paciente no banco de dados.");
+                        }
                         fila.remove(paciente);
                         atualizarQtdPacientesPorFaixaEtaria(-1, paciente.getDataNascimento());
                         encontrado = true;
@@ -481,6 +518,14 @@ public class Main {
                     System.out.println("Nome: " + paciente.getNomeCompleto());
                     System.out.println("Senha: " + paciente.getSenha());
                     System.out.println("Tempo de espera: " + calcularTempoDePermanencia(paciente.getDataHoraEnfileiramento()));
+                    paciente.setDataHoraDesenfileiramento(LocalDateTime.now());
+                    pacientesAtendidos.add(paciente);
+                    try {
+                        atualizarBdo(pacientesAtendidos);
+                    } catch (IOException e) {
+                        System.out.println("Erro ao salvar o paciente no banco de dados.");
+                    }
+                    fila.remove(paciente);
                 } else {
                     System.out.println("❌ Fila Vazia!");
                 }
@@ -490,28 +535,51 @@ public class Main {
         }
 
         try {
-            atualizarBdo();
+            atualizarBdo(fila);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private static void atualizarBdo() throws IOException {
-        FileOutputStream fileOutputStream = new FileOutputStream("src/bdo/fila-de-pacientes.txt");
-        ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
-        objectOutputStream.writeObject(fila);
-        objectOutputStream.close();
-        fileOutputStream.close();
+    private static void atualizarBdo(Collection<Paciente> colecao) throws IOException {
+        LocalDate diaAtual = LocalDate.now();
+        if (colecao instanceof PriorityQueue<?>) {
+            try (FileOutputStream fileOutputStream = new FileOutputStream("src/bdo/fila-de-pacientes.txt");
+                 ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream)) {
+                objectOutputStream.writeObject(colecao);
+            }
+        } else if (colecao instanceof List<?>) {
+            try (FileOutputStream fileOutputStream =
+                         new FileOutputStream("src/bdo/pacientes-atendidos-data-" + diaAtual + ".txt");
+                 ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream)) {
+                objectOutputStream.writeObject(colecao);
+            }
+        } else {
+            System.out.println("Insira um objeto do tipo PriorityQueue<Paciente> ou List<Paciente>");
+        }
     }
 
-    private static PriorityQueue<Paciente> carregarPacientesDoBdo() throws IOException, ClassNotFoundException {
-        FileInputStream fileInputStream = new FileInputStream("src/bdo/fila-de-pacientes.txt");
-        ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
-        fila = (PriorityQueue<Paciente>) objectInputStream.readObject();
-        objectInputStream.close();
-        fileInputStream.close();
-        return fila;
+
+    private static Collection<Paciente> carregarPacientesDoBdo(Collection<Paciente> colecao) throws IOException, ClassNotFoundException {
+        Collection<Paciente> colecaoAtualizada = colecao;
+        LocalDate diaAtual = LocalDate.now();
+        if (colecao instanceof PriorityQueue<?>) {
+            try (FileInputStream fileInputStream = new FileInputStream("src/bdo/fila-de-pacientes.txt");
+                 ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream)) {
+                colecaoAtualizada = (PriorityQueue<Paciente>) objectInputStream.readObject();
+            }
+        } else if (colecao instanceof List<?>) {
+            try (FileInputStream fileInputStream = new FileInputStream("src/bdo/pacientes-atendidos-data-" + diaAtual +
+                    ".txt");
+                 ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream)) {
+                colecaoAtualizada = (List<Paciente>) objectInputStream.readObject();
+            }
+        } else {
+            System.out.println("Insira uma coleção do tipo PriorityQueue<Paciente> ou List<Paciente>");
+        }
+        return colecaoAtualizada;
     }
+
 
     private static String calcularTempoDePermanencia(LocalDateTime dataHoraEnfileiramento) {
         LocalDateTime agora = LocalDateTime.now();
