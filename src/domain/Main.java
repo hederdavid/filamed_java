@@ -245,42 +245,42 @@ public class Main {
     }
 
     private static void tempoMedioDePermanencia() {
-        if (fila.isEmpty()) {
-            System.out.println("❌ Fila Vazia!");
-            return;
-        }
-
+       
+    
         Map<Integer, List<Long>> duracoesPorPrioridade = new HashMap<>();
-
+    
         for (Paciente paciente : fila) {
             int prioridade = paciente.getPrioridade();
             LocalDateTime desenfileiramento = paciente.getDataHoraDesenfileiramento() != null ?
                     paciente.getDataHoraDesenfileiramento() : LocalDateTime.now();
             Duration duracao = Duration.between(paciente.getDataHoraEnfileiramento(), desenfileiramento);
-
+    
             duracoesPorPrioridade
                     .computeIfAbsent(prioridade, k -> new ArrayList<>())
-                    .add(duracao.toMinutes());
+                    .add(duracao.toSeconds());
         }
-
+    
         for (Map.Entry<Integer, List<Long>> entry : duracoesPorPrioridade.entrySet()) {
             int prioridade = entry.getKey();
             List<Long> duracoes = entry.getValue();
-
+    
             long somaDuracoes = duracoes.stream().mapToLong(Long::longValue).sum();
             double mediaDuracoes = somaDuracoes / (double) duracoes.size();
-
+    
+            long mediaMinutos = (long) mediaDuracoes / 60;
+            long mediaSegundos = (long) mediaDuracoes % 60;
+    
             System.out.printf("Prioridade %d:\n", prioridade);
-            System.out.printf(" - Tempo médio de permanência: %.2f minutos\n", mediaDuracoes);
+            System.out.printf(" - Tempo médio de permanência: %d minutos e %d segundos\n", mediaMinutos, mediaSegundos);
         }
     }
 
     private static final Map<Integer, Long> TEMPOS_RECOMENDADOS = Map.of(
-            1, 4L,   // 4 minutos para prioridade 1 (mais urgente)
-            2, 10L,  // 10 minutos para prioridade 2
-            3, 50L,  // 50 minutos para prioridade 3
-            4, 120L, // 120 minutos para prioridade 4
-            5, 240L  // 240 minutos para prioridade 5 (menos urgente)
+            1, 4L,   
+            2, 10L,  
+            3, 50L,  
+            4, 120L, 
+            5, 240L  
     );
 
     private static void percentualPacientesTempoMedioRecomendado() {
@@ -288,30 +288,33 @@ public class Main {
             System.out.println("❌ Fila Vazia!");
             return;
         }
-
+    
         Map<Integer, List<Long>> duracoesPorPrioridade = new HashMap<>();
-
+    
         for (Paciente paciente : fila) {
             int prioridade = paciente.getPrioridade();
             LocalDateTime desenfileiramento = paciente.getDataHoraDesenfileiramento() != null ?
                     paciente.getDataHoraDesenfileiramento() : LocalDateTime.now();
             Duration duracao = Duration.between(paciente.getDataHoraEnfileiramento(), desenfileiramento);
-
+    
             duracoesPorPrioridade
                     .computeIfAbsent(prioridade, k -> new ArrayList<>())
                     .add(duracao.toMinutes());
         }
-
-        for (Map.Entry<Integer, List<Long>> entry : duracoesPorPrioridade.entrySet()) {
-            int prioridade = entry.getKey();
-            List<Long> duracoes = entry.getValue();
-
-            long tempoRecomendado = TEMPOS_RECOMENDADOS.getOrDefault(prioridade, 240L);
-            long pacientesDentroDoTempo = duracoes.stream().filter(d -> d <= tempoRecomendado).count();
-            double percentualDentroDoTempo = (pacientesDentroDoTempo / (double) duracoes.size()) * 100;
-
+    
+        for (int prioridade : TEMPOS_RECOMENDADOS.keySet()) {
+            List<Long> duracoes = duracoesPorPrioridade.getOrDefault(prioridade, new ArrayList<>());
+    
             System.out.printf("Prioridade %d:\n", prioridade);
-            System.out.printf(" - Percentual de pacientes atendidos dentro do tempo recomendado: %.2f%%\n", percentualDentroDoTempo);
+    
+            if (duracoes.isEmpty()) {
+                System.out.println(" - Fila vazia.");
+            } else {
+                long tempoRecomendado = TEMPOS_RECOMENDADOS.get(prioridade);
+                long pacientesDentroDoTempo = duracoes.stream().filter(d -> d <= tempoRecomendado).count();
+                double percentualDentroDoTempo = (pacientesDentroDoTempo / (double) duracoes.size()) * 100;
+                System.out.printf(" - Percentual de pacientes atendidos dentro do tempo recomendado: %.2f%%\n", percentualDentroDoTempo);
+            }
         }
     }
 
