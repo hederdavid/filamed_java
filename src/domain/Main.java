@@ -43,16 +43,6 @@ public class Main {
 
     }
 
-    private static int verificarQuantidadeDePacientesPorPrioridade(int prioridade) {
-        int qtd = 0;
-        for (Paciente paciente : fila) {
-            if (paciente.getPrioridade() == prioridade) {
-                qtd++;
-            }
-        }
-        return qtd;
-    }
-
     private static void verificarQuantidadeDePacientesPorFaixaEtaria() {
         for (Paciente paciente : fila) {
             int idade = calcularIdade(paciente.getDataNascimento());
@@ -70,7 +60,16 @@ public class Main {
                 qtdPacientesPorFaixaEtaria.put("IDOSOS", qtdAtual + 1);
             }
         }
+    }
 
+    private static int verificarQuantidadeDePacientesPorPrioridade(int prioridade) {
+        int qtd = 0;
+        for (Paciente paciente : fila) {
+            if (paciente.getPrioridade() == prioridade) {
+                qtd++;
+            }
+        }
+        return qtd;
     }
 
     public static void main(String[] args) {
@@ -131,10 +130,10 @@ public class Main {
         atualizarQtdPacientesPorFaixaEtaria(1, paciente.getDataNascimento());
         try {
             atualizarBdo();
+            System.out.println("\n ✅ Paciente incluído na fila com sucesso!");
         } catch (IOException e) {
             System.out.println("Erro ao salvar o paciente no banco de dados.");
         }
-        System.out.println("\n ✅ Paciente incluído na fila com sucesso!");
     }
 
     private static void atenderProximoPaciente() {
