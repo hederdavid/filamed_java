@@ -263,75 +263,129 @@ public class Main {
     }
 
     private static void tempoMedioDePermanencia() {
-        if (fila.isEmpty()) {
-            System.out.println("❌ Fila Vazia!");
+        if (pacientesAtendidos.isEmpty()) {
+            System.out.println("❌ Nenhum paciente atendido hoje.");
             return;
         }
 
-        Map<Integer, List<Long>> duracoesPorPrioridade = new HashMap<>();
+        long totalEmergente = 0, totalMuitoUrgente = 0, totalUrgente = 0, totalPoucoUrgente = 0, totalNaoUrgente = 0;
+        int contadorEmergente = 0, contadorMuitoUrgente = 0, contadorUrgente = 0, contadorPoucoUrgente = 0, contadorNaoUrgente = 0;
 
-        for (Paciente paciente : fila) {
-            int prioridade = paciente.getPrioridade();
-            LocalDateTime desenfileiramento = paciente.getDataHoraDesenfileiramento() != null ?
-                    paciente.getDataHoraDesenfileiramento() : LocalDateTime.now();
-            Duration duracao = Duration.between(paciente.getDataHoraEnfileiramento(), desenfileiramento);
+        for (Paciente paciente : pacientesAtendidos) {
+            Duration duracao = Duration.between(paciente.getDataHoraEnfileiramento(), paciente.getDataHoraDesenfileiramento());
+            long segundos = duracao.getSeconds();
 
-            duracoesPorPrioridade
-                    .computeIfAbsent(prioridade, k -> new ArrayList<>())
-                    .add(duracao.toMinutes());
+            switch (paciente.getPrioridade()) {
+                case 5 -> {
+                    totalEmergente += segundos;
+                    contadorEmergente++;
+                }
+                case 4 -> {
+                    totalMuitoUrgente += segundos;
+                    contadorMuitoUrgente++;
+                }
+                case 3 -> {
+                    totalUrgente += segundos;
+                    contadorUrgente++;
+                }
+                case 2 -> {
+                    totalPoucoUrgente += segundos;
+                    contadorPoucoUrgente++;
+                }
+                case 1 -> {
+                    totalNaoUrgente += segundos;
+                    contadorNaoUrgente++;
+                }
+                default -> System.out.println("Algo deu errado ao tentar calcular a média de tempo de permanência.");
+            }
         }
 
-        for (Map.Entry<Integer, List<Long>> entry : duracoesPorPrioridade.entrySet()) {
-            int prioridade = entry.getKey();
-            List<Long> duracoes = entry.getValue();
-
-            long somaDuracoes = duracoes.stream().mapToLong(Long::longValue).sum();
-            double mediaDuracoes = somaDuracoes / (double) duracoes.size();
-
-            System.out.printf("Prioridade %d:\n", prioridade);
-            System.out.printf(" - Tempo médio de permanência: %.2f minutos\n", mediaDuracoes);
-        }
+        printMedia("Emergente", totalEmergente, contadorEmergente);
+        printMedia("Muito Urgente", totalMuitoUrgente, contadorMuitoUrgente);
+        printMedia("Urgente", totalUrgente, contadorUrgente);
+        printMedia("Pouco Urgente", totalPoucoUrgente, contadorPoucoUrgente);
+        printMedia("Não Urgente", totalNaoUrgente, contadorNaoUrgente);
     }
 
-    private static final Map<Integer, Long> TEMPOS_RECOMENDADOS = Map.of(
-            1, 4L,   // 4 minutos para prioridade 1 (mais urgente)
-            2, 10L,  // 10 minutos para prioridade 2
-            3, 50L,  // 50 minutos para prioridade 3
-            4, 120L, // 120 minutos para prioridade 4
-            5, 240L  // 240 minutos para prioridade 5 (menos urgente)
-    );
+    private static void printMedia(String prioridade, long totalSegundos, int contador) {
+        if (contador == 0) {
+            System.out.printf("Média %s: 0 minutos e 0 segundos.%n", prioridade);
+        } else {
+            long mediaSegundos = totalSegundos / contador;
+            long minutos = mediaSegundos / 60;
+            long segundos = mediaSegundos % 60;
+            System.out.printf("Média %s: %d minutos e %d segundos.%n", prioridade, minutos, segundos);
+        }
+    }
 
     private static void percentualPacientesTempoMedioRecomendado() {
-        if (fila.isEmpty()) {
-            System.out.println("❌ Fila Vazia!");
+        if (pacientesAtendidos.isEmpty()) {
+            System.out.println("❌ Nenhum paciente atendido hoje.");
             return;
         }
 
-        Map<Integer, List<Long>> duracoesPorPrioridade = new HashMap<>();
+        int pacientesEmergenteDentroDoTempo = 0;
+        int pacientesMuitoUrgenteDentroDoTempo = 0;
+        int pacientesUrgenteDentroDoTempo = 0;
+        int pacientesPoucoUrgenteDentroDoTempo = 0;
+        int pacientesNaoUrgenteDentroDoTempo = 0;
 
-        for (Paciente paciente : fila) {
-            int prioridade = paciente.getPrioridade();
-            LocalDateTime desenfileiramento = paciente.getDataHoraDesenfileiramento() != null ?
-                    paciente.getDataHoraDesenfileiramento() : LocalDateTime.now();
-            Duration duracao = Duration.between(paciente.getDataHoraEnfileiramento(), desenfileiramento);
+        int totalEmergente = 0;
+        int totalMuitoUrgente = 0;
+        int totalUrgente = 0;
+        int totalPoucoUrgente = 0;
+        int totalNaoUrgente = 0;
 
-            duracoesPorPrioridade
-                    .computeIfAbsent(prioridade, k -> new ArrayList<>())
-                    .add(duracao.toMinutes());
+        for (Paciente paciente : pacientesAtendidos) {
+            Duration duracao = Duration.between(paciente.getDataHoraEnfileiramento(), paciente.getDataHoraDesenfileiramento());
+            long minutos = duracao.toMinutes();
+
+            switch (paciente.getPrioridade()) {
+                case 5 -> {
+                    totalEmergente++;
+                    if (minutos <= 4) {
+                        pacientesEmergenteDentroDoTempo++;
+                    }
+                }
+                case 4 -> {
+                    totalMuitoUrgente++;
+                    if (minutos <= 10) {
+                        pacientesMuitoUrgenteDentroDoTempo++;
+                    }
+                }
+                case 3 -> {
+                    totalUrgente++;
+                    if (minutos <= 50) {
+                        pacientesUrgenteDentroDoTempo++;
+                    }
+                }
+                case 2 -> {
+                    totalPoucoUrgente++;
+                    if (minutos <= 120) {
+                        pacientesPoucoUrgenteDentroDoTempo++;
+                    }
+                }
+                case 1 -> {
+                    totalNaoUrgente++;
+                    if (minutos <= 240) {
+                        pacientesNaoUrgenteDentroDoTempo++;
+                    }
+                }
+            }
         }
 
-        for (Map.Entry<Integer, List<Long>> entry : duracoesPorPrioridade.entrySet()) {
-            int prioridade = entry.getKey();
-            List<Long> duracoes = entry.getValue();
-
-            long tempoRecomendado = TEMPOS_RECOMENDADOS.getOrDefault(prioridade, 240L);
-            long pacientesDentroDoTempo = duracoes.stream().filter(d -> d <= tempoRecomendado).count();
-            double percentualDentroDoTempo = (pacientesDentroDoTempo / (double) duracoes.size()) * 100;
-
-            System.out.printf("Prioridade %d:\n", prioridade);
-            System.out.printf(" - Percentual de pacientes atendidos dentro do tempo recomendado: %.2f%%\n", percentualDentroDoTempo);
-        }
+        System.out.printf("Percentual de pacientes Emergente atendidos no tempo recomendado: %.2f%%%n",
+                totalEmergente == 0 ? 0 : (pacientesEmergenteDentroDoTempo * 100.0 / totalEmergente));
+        System.out.printf("Percentual de pacientes Muito Urgente atendidos no tempo recomendado: %.2f%%%n",
+                totalMuitoUrgente == 0 ? 0 : (pacientesMuitoUrgenteDentroDoTempo * 100.0 / totalMuitoUrgente));
+        System.out.printf("Percentual de pacientes Urgente atendidos no tempo recomendado: %.2f%%%n",
+                totalUrgente == 0 ? 0 : (pacientesUrgenteDentroDoTempo * 100.0 / totalUrgente));
+        System.out.printf("Percentual de pacientes Pouco Urgente atendidos no tempo recomendado: %.2f%%%n",
+                totalPoucoUrgente == 0 ? 0 : (pacientesPoucoUrgenteDentroDoTempo * 100.0 / totalPoucoUrgente));
+        System.out.printf("Percentual de pacientes Não Urgente atendidos no tempo recomendado: %.2f%%%n",
+                totalNaoUrgente == 0 ? 0 : (pacientesNaoUrgenteDentroDoTempo * 100.0 / totalNaoUrgente));
     }
+
 
     private static void quantidadeDePacientesPorFaixaEtaria() {
         System.out.println("----------------------------------------");
